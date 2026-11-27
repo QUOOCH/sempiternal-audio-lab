@@ -40,11 +40,13 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
       <div class="voice">
         <div class="voicehead"><span class="dot"></span><strong>Профессор</strong><small>60–65 лет</small></div>
         <div class="field"><label for="profVoice">Голос</label><select id="profVoice"><option value="Charon" selected>Charon — глубокий, спокойный</option><option value="Orus">Orus — уверенный, зрелый</option><option value="Fenrir">Fenrir — низкий, выразительный</option><option value="Kore">Kore — мягкий, ясный</option><option value="Puck">Puck — энергичный</option></select></div>
+        <div class="actions"><button class="secondary preview-btn" type="button" data-select="profVoice" data-audio="profPreview" data-style="profStyle" data-kind="prof">▶ Прослушать голос</button></div><audio class="player preview-player" id="profPreview" controls></audio>
         <div class="field"><label for="profStyle">Манера речи</label><input id="profStyle" value="Мужчина 60–65 лет. Низкий бархатный баритон, спокойная интеллектуальная подача, лёгкая хрипотца. Убедительный, вдумчивый. Эмоции нарастают постепенно, без театрального переигрывания."></div>
       </div>
       <div class="voice rep">
         <div class="voicehead"><span class="dot"></span><strong>Представитель комиссии</strong><small>45–50 лет</small></div>
         <div class="field"><label for="repVoice">Голос</label><select id="repVoice"><option value="Puck" selected>Puck — чёткий, уверенный</option><option value="Orus">Orus — сдержанный, зрелый</option><option value="Charon">Charon — глубокий</option><option value="Kore">Kore — мягкий, ясный</option><option value="Fenrir">Fenrir — низкий, выразительный</option></select></div>
+        <div class="actions"><button class="secondary preview-btn" type="button" data-select="repVoice" data-audio="repPreview" data-style="repStyle" data-kind="rep">▶ Прослушать голос</button></div><audio class="player preview-player" id="repPreview" controls></audio>
         <div class="field"><label for="repStyle">Манера речи</label><input id="repStyle" value="Мужчина 45–50 лет. Чистый уверенный баритон, профессиональная телевизионная подача. Контролируемый, слегка скептичный, иногда сдержанно раздражённый."></div>
       </div>
     </div>
@@ -89,6 +91,25 @@ function findAudio(obj){
   return null;
 }
 function base64ToBlob(b64,mime="audio/wav"){const bin=atob(b64);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return new Blob([bytes],{type:mime});}
+document.querySelectorAll(".preview-btn").forEach(btn=>btn.addEventListener("click",async()=>{
+  const key=$("apiKey").value.trim();if(!key){setStatus("Сначала вставь API-ключ Google.",true);return;}
+  const select=$(btn.dataset.select), audio=$(btn.dataset.audio), style=$(btn.dataset.style);
+  const isProf=btn.dataset.kind==="prof";
+  const sample=isProf
+    ?"Представьте реку. Вы можете направить её в бетонное русло, поставить дамбы, рассчитать каждый поворот. Но вода всё равно будет искать путь."
+    :"Профессор, вы действительно считаете, что искусственный интеллект может представлять угрозу для общества?";
+  const speaker="Preview";
+  const payload={model:"gemini-3.8-flash-tts",input:[{type:"user_input",content:[{type:"text",text:sample,annotations:[{type:"speech_metadata",speaker,style:style.value}]}]}],response_format:{type:"audio"},generation_config:{speech_config:{speakers:[{speaker,voice:select.value}]}}};
+  btn.disabled=true;btn.textContent="Готовлю образец…";setStatus("Генерирую короткий образец голоса…");
+  try{
+    const res=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify(payload)});
+    const data=await res.json();if(!res.ok)throw new Error(data?.error?.message||"Google вернул ошибку "+res.status);
+    const b64=findAudio(data);if(!b64)throw new Error("В ответе Google не нашлось аудио. Проверь доступ к Gemini TTS.");
+    const blob=base64ToBlob(b64);if(audio.dataset.url)URL.revokeObjectURL(audio.dataset.url);
+    const url=URL.createObjectURL(blob);audio.dataset.url=url;audio.src=url;audio.style.display="block";audio.play();setStatus("Образец готов. Можно переключить голос и сравнить.");
+  }catch(e){setStatus("Не получилось: "+e.message,true);}
+  finally{btn.disabled=false;btn.textContent="▶ Прослушать голос";}
+}));
 $("generate").addEventListener("click",async()=>{
   const key=$("apiKey").value.trim();if(!key){setStatus("Сначала вставь API-ключ Google.",true);return;}
   let turns;try{turns=parseTurns($("dialogue").value)}catch(e){setStatus(e.message,true);return;}
