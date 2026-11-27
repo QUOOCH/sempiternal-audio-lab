@@ -35,6 +35,18 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
   </section>
 
   <section class="panel">
+    <h2>02 / ElevenLabs — подключение</h2>
+    <div class="field"><label for="elevenKey">ElevenLabs API key</label><div class="keyrow"><input id="elevenKey" type="password" autocomplete="off" placeholder="Вставь API-ключ ElevenLabs"><button class="smallbtn" id="toggleElevenKey" type="button">Показать</button></div><div class="hint">Ключ хранится только в памяти вкладки, не записывается в файл и не отправляется нам.</div></div>
+    <div class="row">
+      <div class="voice"><div class="voicehead"><span class="dot"></span><strong>Профессор Эклстоун</strong></div><div class="field"><label for="elevenProfId">Voice ID профессора</label><input id="elevenProfId" autocomplete="off" placeholder="Voice ID из ElevenLabs"></div></div>
+      <div class="voice rep"><div class="voicehead"><span class="dot"></span><strong>Представитель комиссии</strong></div><div class="field"><label for="elevenRepId">Voice ID представителя</label><input id="elevenRepId" autocomplete="off" placeholder="Второй Voice ID"></div></div>
+    </div>
+    <div class="field"><label for="elevenModel">Модель</label><select id="elevenModel"><option value="eleven_v3" selected>Eleven v3 — выразительный диалог</option><option value="eleven_v4">Eleven v4 — новая модель</option></select></div>
+    <div class="actions"><button class="primary" id="generateEleven">Сгенерировать в ElevenLabs</button><button class="secondary" id="downloadEleven" disabled>Скачать MP3</button></div>
+    <div class="status" id="elevenStatus" role="status"></div><audio class="player" id="elevenAudio" controls></audio>
+    <div class="warning">Диалог автоматически делится на фрагменты до 2 000 символов. Каждый фрагмент — отдельный запрос и расход кредитов. Сначала проверим на коротком отрывке.</div>
+  </section>
+  <section class="panel">
     <h2>02 / Голоса персонажей</h2>
     <div class="row">
       <div class="voice">
@@ -83,6 +95,20 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
 </main>
 <script>
 const $=id=>document.getElementById(id);
+let elevenBlob=null;
+$("toggleElevenKey").addEventListener("click",()=>{const k=$("elevenKey");k.type=k.type==="password"?"text":"password";$("toggleElevenKey").textContent=k.type==="password"?"Показать":"Скрыть"});
+function setElevenStatus(s,err=false){$("elevenStatus").textContent=s;$("elevenStatus").className="status"+(err?" error":"")}
+function splitDialogue(turns,max=1800){const chunks=[];let part=[],size=0;for(const t of turns){if(t.text.length>max)throw new Error("Одна реплика длиннее 1 800 символов — её нужно разделить.");if(size+t.text.length>max&&part.length){chunks.push(part);part=[];size=0;}part.push(t);size+=t.text.length;}if(part.length)chunks.push(part);return chunks;}
+$("generateEleven").addEventListener("click",async()=>{
+ const key=$("elevenKey").value.trim(),prof=$("elevenProfId").value.trim(),rep=$("elevenRepId").value.trim();
+ if(!key||!prof||!rep){setElevenStatus("Нужны API-ключ и два Voice ID. Пока ничего не отправлено и кредиты не потрачены.",true);return;}
+ let chunks;try{chunks=splitDialogue(parseTurns($("dialogue").value));}catch(e){setElevenStatus(e.message,true);return;}
+ const btn=$("generateEleven"),parts=[];btn.disabled=true;$("downloadEleven").disabled=true;$("elevenAudio").style.display="none";
+ try{for(let i=0;i<chunks.length;i++){setElevenStatus("Генерирую фрагмент "+(i+1)+" из "+chunks.length+"…");const inputs=chunks[i].map(t=>({text:(t.speaker==="Professor"?"[calm, thoughtful, measured delivery] ":"[confident, formal broadcast delivery] ")+t.text,voice_id:t.speaker==="Professor"?prof:rep}));const res=await fetch("https://api.elevenlabs.io/v1/text-to-dialogue?output_format=mp3_44100_128",{method:"POST",headers:{"xi-api-key":key,"Content-Type":"application/json","Accept":"audio/mpeg"},body:JSON.stringify({model_id:$("elevenModel").value,inputs})});if(!res.ok){let msg="Ошибка ElevenLabs: "+res.status;try{const d=await res.json();msg=d.detail?.message||d.detail||d.message||msg;}catch(_){}throw new Error(typeof msg==="string"?msg:JSON.stringify(msg));}parts.push(await res.blob());}
+ elevenBlob=new Blob(parts,{type:"audio/mpeg"});const url=URL.createObjectURL(elevenBlob);$("elevenAudio").src=url;$("elevenAudio").style.display="block";$("downloadEleven").disabled=false;setElevenStatus("Готово! 🎧");
+ }catch(e){setElevenStatus("Не получилось: "+e.message+(e.message==="Failed to fetch"?" Возможно, браузер блокирует прямой запрос (CORS). Тогда сделаем серверный посредник.":""),true);}finally{btn.disabled=false;}
+});
+$("downloadEleven").addEventListener("click",()=>{if(!elevenBlob)return;const u=URL.createObjectURL(elevenBlob),a=document.createElement("a");a.href=u;a.download="sempiternal-elevenlabs-dialogue.mp3";a.click();setTimeout(()=>URL.revokeObjectURL(u),1500);});
 let audioBlob=null;
 $("toggleKey").addEventListener("click",()=>{const k=$("apiKey");k.type=k.type==="password"?"text":"password";$("toggleKey").textContent=k.type==="password"?"Показать":"Скрыть"});
 function setStatus(s,err=false){$("status").textContent=s;$("status").className="status"+(err?" error":"")}
