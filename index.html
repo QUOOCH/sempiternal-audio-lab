@@ -30,7 +30,7 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
   <div id="elevenPanel" class="engine-pane">
   <section class="panel">
     <h2>02 / ElevenLabs — подключение</h2>
-    <div class="field"><label for="elevenKey">ElevenLabs API key</label><div class="keyrow"><input id="elevenKey" type="password" autocomplete="off" placeholder="Вставь API-ключ ElevenLabs"><button class="smallbtn" id="toggleElevenKey" type="button">Показать</button></div><div class="hint">Ключ хранится только в памяти вкладки, не записывается в файл и не отправляется нам.</div></div>
+    <div class="field"><label for="elevenKey">ElevenLabs API key</label><div class="keyrow"><input id="elevenKey" type="password" autocomplete="off" placeholder="Вставь API-ключ ElevenLabs"><button class="smallbtn" id="toggleElevenKey" type="button">Показать</button></div><div class="hint">Ключ сохраняется в локальном хранилище этого браузера, чтобы не вводить его после обновления. Он не записывается в GitHub. Не включай сохранение на чужом или общем устройстве.</div></div>
     <div class="row">
       <div class="voice"><div class="voicehead"><span class="dot"></span><strong>Профессор Эклстоун</strong></div><div class="field"><label for="elevenProfId">Голос профессора</label><select id="elevenProfId"><option value="">Сначала загрузи голоса</option></select></div><audio id="elevenProfPreview" class="player" controls></audio></div>
       <div class="voice rep"><div class="voicehead"><span class="dot"></span><strong>Представитель комиссии</strong></div><div class="field"><label for="elevenRepId">Голос представителя</label><select id="elevenRepId"><option value="">Сначала загрузи голоса</option></select></div><audio id="elevenRepPreview" class="player" controls></audio></div>
@@ -47,7 +47,7 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
     <div class="field">
       <label for="apiKey">Твой Google Gemini API key</label>
       <div class="keyrow"><input id="apiKey" type="password" autocomplete="off" placeholder="Вставь API-ключ сюда"><button class="smallbtn" id="toggleKey" type="button">Показать</button></div>
-      <div class="hint">Ключ используется только в этом браузере для запроса к Google. Студия его не сохраняет и не отправляет нам.</div>
+      <div class="hint">Ключ сохраняется в локальном хранилище этого браузера, чтобы не вводить его после обновления. Он не записывается в GitHub. Не включай сохранение на чужом или общем устройстве.</div>
     </div>
   </section>
 
@@ -102,6 +102,14 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
 </main>
 <script>
 const $=id=>document.getElementById(id);
+// API-ключи остаются в localStorage этого браузера и переживают обновление страницы.
+for(const [id,storageKey] of [["elevenKey","sempiternal_eleven_key"],["apiKey","sempiternal_gemini_key"]]){
+  const field=$(id);
+  try{field.value=localStorage.getItem(storageKey)||"";}catch(_){}
+  field.addEventListener("input",()=>{
+    try{if(field.value) localStorage.setItem(storageKey,field.value);else localStorage.removeItem(storageKey);}catch(_){}
+  });
+}
 function switchEngine(engine){
  const eleven=engine==="eleven";
  $("elevenPanel").classList.toggle("hidden",!eleven);
