@@ -16,7 +16,7 @@ h2{font-size:16px;margin:0 0 15px;letter-spacing:.01em}.row{display:grid;grid-te
 .voice{background:#10151d;border:1px solid #2c3543;border-radius:13px;padding:14px}.voicehead{display:flex;align-items:center;gap:9px;margin-bottom:8px}.dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px #b6f36b66}.voice.rep .dot{background:#ff9b75;box-shadow:0 0 12px #ff9b7566}.voicehead strong{font-size:14px}.voicehead small{margin-left:auto;color:var(--muted);font-size:11px}
 textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
 .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:15px}.primary{background:var(--accent);color:#12170d;border:0;border-radius:11px;padding:13px 19px;font-weight:850;font-size:14px;cursor:pointer}.primary:disabled{opacity:.5;cursor:wait}.secondary{background:#252d3a;color:#e7edf5;border:1px solid #3a4657;border-radius:11px;padding:12px 16px;font-weight:650;cursor:pointer}.status{color:var(--muted);font-size:13px;min-height:22px}.status.error{color:#ff8c82}.player{width:100%;margin-top:16px;display:none}.foot{color:#687384;font-size:11px;text-align:center;margin-top:25px}.warning{font-size:12px;color:#c0c8d4;background:#10151d;border-left:3px solid #d9b76a;padding:10px 12px;border-radius:5px;margin-top:12px}
-.tabs{display:flex;gap:8px;margin:0 0 18px;padding:5px;background:#10151d;border:1px solid var(--line);border-radius:13px}.tab{flex:1;background:transparent;color:var(--muted);border:0;border-radius:9px;padding:11px 12px;font:inherit;font-weight:750;cursor:pointer}.tab.active{background:var(--accent);color:#12170d}.engine-pane.hidden{display:none}\n.tabs{display:flex;gap:8px;margin:0 0 18px;padding:5px;background:#10151d;border:1px solid var(--line);border-radius:13px}.tab{flex:1;background:transparent;color:var(--muted);border:0;border-radius:9px;padding:11px 12px;font:inherit;font-weight:750;cursor:pointer}.tab.active{background:var(--accent);color:#12170d}.engine-pane.hidden{display:none}
+.tabs{display:flex;gap:8px;margin:0 0 18px;padding:5px;background:#10151d;border:1px solid var(--line);border-radius:13px}.tab{flex:1;background:transparent;color:var(--muted);border:0;border-radius:9px;padding:11px 12px;font:inherit;font-weight:750;cursor:pointer}.tab.active{background:var(--accent);color:#12170d}.engine-pane.hidden{display:none}.style-field{min-height:84px!important}\n.tabs{display:flex;gap:8px;margin:0 0 18px;padding:5px;background:#10151d;border:1px solid var(--line);border-radius:13px}.tab{flex:1;background:transparent;color:var(--muted);border:0;border-radius:9px;padding:11px 12px;font:inherit;font-weight:750;cursor:pointer}.tab.active{background:var(--accent);color:#12170d}.engine-pane.hidden{display:none}
 @media(max-width:650px){main{padding:22px 14px 45px}.row{grid-template-columns:1fr}.panel{padding:16px}.top{margin-bottom:22px}}
 </style>
 </head>
@@ -35,10 +35,20 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
       <div class="voice"><div class="voicehead"><span class="dot"></span><strong>Профессор Эклстоун</strong></div><div class="field"><label for="elevenProfId">Голос профессора</label><select id="elevenProfId"><option value="">Сначала загрузи голоса</option></select></div><audio id="elevenProfPreview" class="player" controls></audio></div>
       <div class="voice rep"><div class="voicehead"><span class="dot"></span><strong>Представитель комиссии</strong></div><div class="field"><label for="elevenRepId">Голос представителя</label><select id="elevenRepId"><option value="">Сначала загрузи голоса</option></select></div><audio id="elevenRepPreview" class="player" controls></audio></div>
     </div>
-    <div class="actions"><button class="secondary" id="loadElevenVoices" type="button">Загрузить мои голоса</button></div><div class="field"><label for="elevenModel">Модель</label><select id="elevenModel"><option value="eleven_v3" selected>Eleven v3 — выразительный диалог</option><option value="eleven_v4">Eleven v4 — новая модель</option></select></div>
+    <div class="field">
+      <label for="elevenProfStyle">Манера речи — профессор</label>
+      <textarea id="elevenProfStyle" class="style-field" rows="2">low, warm resonant male baritone, slight rasp, thoughtful intellectual delivery, measured pace, restrained emotion that gradually intensifies, natural Russian speech</textarea>
+    </div>
+    <div class="field">
+      <label for="elevenRepStyle">Манера речи — представитель комиссии</label>
+      <textarea id="elevenRepStyle" class="style-field" rows="2">clear confident male baritone, polished television presenter, formal and controlled, subtly skeptical, occasionally pressing, natural Russian speech</textarea>
+    </div>
+    <label class="hint" style="display:flex;gap:9px;align-items:center;margin:12px 0"><input id="elevenAutoTags" type="checkbox" checked style="width:auto;accent-color:var(--accent)"> Автоматически менять эмоции по ходу сцены</label>
+    <p class="hint">Манера задаёт общий характер голоса, а эмоциональные теги меняют подачу конкретных реплик. Текст оригинала не меняется.</p>
+    <div class="actions"><button class="secondary" id="loadElevenVoices" type="button">Загрузить мои голоса</button></div><div class="field"><label for="elevenModel">Модель</label><select id="elevenModel"><option value="eleven_v4" selected>Eleven v4 — выразительный диалог (рекомендуется)</option><option value="eleven_v3">Eleven v3 — выразительный диалог</option></select></div>
     <div class="actions"><button class="primary" id="generateEleven">Сгенерировать в ElevenLabs</button><button class="secondary" id="downloadEleven" disabled>Скачать MP3</button></div>
     <div class="status" id="elevenStatus" role="status"></div><audio class="player" id="elevenAudio" controls></audio>
-    <div class="warning">Диалог автоматически делится на фрагменты до 2 000 символов. Каждый фрагмент — отдельный запрос и расход кредитов. Сначала проверим на коротком отрывке.</div>
+    <div class="warning">В каждый запрос добавляются настройки манеры и эмоциональные теги. Диалог делится на фрагменты до лимита API; каждый фрагмент — отдельный запрос и расход кредитов. Сначала проверь короткий отрывок.</div>
   </section>
   </div>
   <div id="geminiPanel" class="engine-pane hidden">
@@ -140,13 +150,57 @@ $("loadElevenVoices").addEventListener("click",async()=>{
 function previewElevenVoice(selectId,audioId){const v=elevenVoices.find(x=>x.voice_id===$(selectId).value);if(!v?.preview_url){setElevenStatus("У этого голоса нет доступного образца.",true);return;}const a=$(audioId);a.src=v.preview_url;a.style.display="block";a.play().catch(()=>{});}
 $("elevenProfId").addEventListener("change",()=>previewElevenVoice("elevenProfId","elevenProfPreview"));
 $("elevenRepId").addEventListener("change",()=>previewElevenVoice("elevenRepId","elevenRepPreview"));
-function splitDialogue(turns,max=1800){const chunks=[];let part=[],size=0;for(const t of turns){if(t.text.length>max)throw new Error("Одна реплика длиннее 1 800 символов — её нужно разделить.");if(size+t.text.length>max&&part.length){chunks.push(part);part=[];size=0;}part.push(t);size+=t.text.length;}if(part.length)chunks.push(part);return chunks;}
+function emotionTagForTurn(t,index){
+ const text=t.text.toLowerCase();
+ if(t.speaker==="Professor"){
+  if(/представьте себе реку|человеческий разум — это такая река/.test(text))return "[reflective, measured, quietly vivid]";
+  if(/сократ|он знал, что не знает|она просто не имеет/.test(text))return "[thoughtful, precise, quietly emphatic]";
+  if(/иррациональность|искусство, религию, любовь|так велит сердце/.test(text))return "[warm, passionate, building intensity]";
+  if(/отдадим ему руль|пассажирами в собственном теле|незаметная революция/.test(text))return "[grave, ominous, deliberate]";
+  if(/пока останется|чем вы обоснуете свой отказ|перестанете доверять/.test(text))return "[challenging, controlled, pressing]";
+  if(/да не предлагаю|кто будет отвечать|кто тогда будет человеком/.test(text))return "[firm, intense, slightly frustrated]";
+  if(/в том, что мы судим|слишком мало знаем/.test(text))return "[serious, concerned, measured]";
+  return "[calm, thoughtful, measured]";
+ }
+ if(/почему мы вообще должны бояться/.test(text))return "[skeptical, formal, probing]";
+ if(/тогда объясните|вы предлагаете отказаться/.test(text))return "[questioning, composed, pressing]";
+ if(/и в чём же|вы утверждаете/.test(text))return "[curious, skeptical, controlled]";
+ if(/но разве|разве это не преимущество/.test(text))return "[challenging, confident, slightly impatient]";
+ if(/мрачную картину/.test(text))return "[dry, restrained, faintly skeptical]";
+ if(/окончательное решение|нам следует остановить/.test(text))return "[insistent, measured, formal]";
+ if(/думаю, именно этот вопрос/.test(text))return "[formal, composed, closing the discussion]";
+ return "[professional, controlled, skeptical]";
+}
+function buildElevenInputs(turns,prof,rep){
+ const profStyle=$("elevenProfStyle").value.trim(),repStyle=$("elevenRepStyle").value.trim();
+ return turns.map((t,i)=>{
+  const style=t.speaker==="Professor"?profStyle:repStyle;
+  const tag=$("elevenAutoTags").checked?emotionTagForTurn(t,i):"";
+  const direction=style?"["+style+"] ":"";
+  return {text:direction+(tag?tag+" ":"")+t.text,voice_id:t.speaker==="Professor"?prof:rep};
+ });
+}
+function splitElevenInputs(inputs,max=1900){
+ const chunks=[];let part=[],size=0;
+ for(const item of inputs){
+  const n=item.text.length;
+  if(n>max)throw new Error("Одна реплика с настройками манеры длиннее лимита API. Сократи описание манеры.");
+  if(size+n>max&&part.length){chunks.push(part);part=[];size=0;}
+  part.push(item);size+=n;
+ }
+ if(part.length)chunks.push(part);return chunks;
+}
 $("generateEleven").addEventListener("click",async()=>{
  const key=$("elevenKey").value.trim(),prof=$("elevenProfId").value.trim(),rep=$("elevenRepId").value.trim();
  if(!key||!prof||!rep){setElevenStatus("Нужны API-ключ и два Voice ID. Пока ничего не отправлено и кредиты не потрачены.",true);return;}
- let chunks;try{chunks=splitDialogue(parseTurns($("dialogue").value));}catch(e){setElevenStatus(e.message,true);return;}
+ let chunks;try{chunks=splitElevenInputs(buildElevenInputs(parseTurns($("dialogue").value),prof,rep));}catch(e){setElevenStatus(e.message,true);return;}
  const btn=$("generateEleven"),parts=[];btn.disabled=true;$("downloadEleven").disabled=true;$("elevenAudio").style.display="none";
- try{for(let i=0;i<chunks.length;i++){setElevenStatus("Генерирую фрагмент "+(i+1)+" из "+chunks.length+"…");const inputs=chunks[i].map(t=>({text:(t.speaker==="Professor"?"[calm, thoughtful, measured delivery] ":"[confident, formal broadcast delivery] ")+t.text,voice_id:t.speaker==="Professor"?prof:rep}));const res=await fetch("https://api.elevenlabs.io/v1/text-to-dialogue?output_format=mp3_44100_128",{method:"POST",headers:{"xi-api-key":key,"Content-Type":"application/json","Accept":"audio/mpeg"},body:JSON.stringify({model_id:$("elevenModel").value,inputs})});if(!res.ok){let msg="Ошибка ElevenLabs: "+res.status;try{const d=await res.json();msg=d.detail?.message||d.detail||d.message||msg;}catch(_){}throw new Error(typeof msg==="string"?msg:JSON.stringify(msg));}parts.push(await res.blob());}
+ try{for(let i=0;i<chunks.length;i++){
+  setElevenStatus("Генерирую фрагмент "+(i+1)+" из "+chunks.length+"…");
+  const res=await fetch("https://api.elevenlabs.io/v1/text-to-dialogue?output_format=mp3_44100_128",{method:"POST",headers:{"xi-api-key":key,"Content-Type":"application/json","Accept":"audio/mpeg"},body:JSON.stringify({model_id:$("elevenModel").value,language_code:"ru",inputs:chunks[i]})});
+  if(!res.ok){let msg="Ошибка ElevenLabs: "+res.status;try{const d=await res.json();msg=d.detail?.message||d.detail||d.message||msg;}catch(_){}throw new Error(typeof msg==="string"?msg:JSON.stringify(msg));}
+  parts.push(await res.blob());
+ }
  elevenBlob=new Blob(parts,{type:"audio/mpeg"});const url=URL.createObjectURL(elevenBlob);$("elevenAudio").src=url;$("elevenAudio").style.display="block";$("downloadEleven").disabled=false;setElevenStatus("Готово! 🎧");
  }catch(e){setElevenStatus("Не получилось: "+e.message+(e.message==="Failed to fetch"?" Возможно, браузер блокирует прямой запрос (CORS). Тогда сделаем серверный посредник.":""),true);}finally{btn.disabled=false;}
 });
