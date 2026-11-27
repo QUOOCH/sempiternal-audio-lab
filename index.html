@@ -136,8 +136,10 @@ function restoreAndSaveKey(id,storageKey){
 }
 restoreAndSaveKey("elevenKey","sempiternal_eleven_key");
 restoreAndSaveKey("apiKey","sempiternal_gemini_key");
+let activeEngine="eleven";
 function switchEngine(engine){
  const eleven=engine==="eleven";
+ activeEngine=eleven?"eleven":"gemini";
  $("elevenPanel").classList.toggle("hidden",!eleven);
  $("geminiPanel").classList.toggle("hidden",eleven);
  $("tabEleven").classList.toggle("active",eleven);
@@ -269,7 +271,7 @@ document.querySelectorAll(".preview-btn").forEach(btn=>btn.addEventListener("cli
   finally{btn.disabled=false;btn.textContent="▶ Прослушать голос";}
 }));
 $("generate").addEventListener("click",async()=>{
-  if(!$("elevenPanel").classList.contains("hidden")){
+  if(activeEngine==="eleven"){
     if(confirm("Запустить весь диалог через ElevenLabs? Это несколько платных запросов."))runElevenGeneration(true,$("generate"));
     return;
   }
