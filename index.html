@@ -38,10 +38,10 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
     <h2>02 / ElevenLabs — подключение</h2>
     <div class="field"><label for="elevenKey">ElevenLabs API key</label><div class="keyrow"><input id="elevenKey" type="password" autocomplete="off" placeholder="Вставь API-ключ ElevenLabs"><button class="smallbtn" id="toggleElevenKey" type="button">Показать</button></div><div class="hint">Ключ хранится только в памяти вкладки, не записывается в файл и не отправляется нам.</div></div>
     <div class="row">
-      <div class="voice"><div class="voicehead"><span class="dot"></span><strong>Профессор Эклстоун</strong></div><div class="field"><label for="elevenProfId">Voice ID профессора</label><input id="elevenProfId" autocomplete="off" placeholder="Voice ID из ElevenLabs"></div></div>
-      <div class="voice rep"><div class="voicehead"><span class="dot"></span><strong>Представитель комиссии</strong></div><div class="field"><label for="elevenRepId">Voice ID представителя</label><input id="elevenRepId" autocomplete="off" placeholder="Второй Voice ID"></div></div>
+      <div class="voice"><div class="voicehead"><span class="dot"></span><strong>Профессор Эклстоун</strong></div><div class="field"><label for="elevenProfId">Голос профессора</label><select id="elevenProfId"><option value="">Сначала загрузи голоса</option></select></div><audio id="elevenProfPreview" class="player" controls></audio></div>
+      <div class="voice rep"><div class="voicehead"><span class="dot"></span><strong>Представитель комиссии</strong></div><div class="field"><label for="elevenRepId">Голос представителя</label><select id="elevenRepId"><option value="">Сначала загрузи голоса</option></select></div><audio id="elevenRepPreview" class="player" controls></audio></div>
     </div>
-    <div class="field"><label for="elevenModel">Модель</label><select id="elevenModel"><option value="eleven_v3" selected>Eleven v3 — выразительный диалог</option><option value="eleven_v4">Eleven v4 — новая модель</option></select></div>
+    <div class="actions"><button class="secondary" id="loadElevenVoices" type="button">Загрузить мои голоса</button></div><div class="field"><label for="elevenModel">Модель</label><select id="elevenModel"><option value="eleven_v3" selected>Eleven v3 — выразительный диалог</option><option value="eleven_v4">Eleven v4 — новая модель</option></select></div>
     <div class="actions"><button class="primary" id="generateEleven">Сгенерировать в ElevenLabs</button><button class="secondary" id="downloadEleven" disabled>Скачать MP3</button></div>
     <div class="status" id="elevenStatus" role="status"></div><audio class="player" id="elevenAudio" controls></audio>
     <div class="warning">Диалог автоматически делится на фрагменты до 2 000 символов. Каждый фрагмент — отдельный запрос и расход кредитов. Сначала проверим на коротком отрывке.</div>
@@ -98,6 +98,21 @@ const $=id=>document.getElementById(id);
 let elevenBlob=null;
 $("toggleElevenKey").addEventListener("click",()=>{const k=$("elevenKey");k.type=k.type==="password"?"text":"password";$("toggleElevenKey").textContent=k.type==="password"?"Показать":"Скрыть"});
 function setElevenStatus(s,err=false){$("elevenStatus").textContent=s;$("elevenStatus").className="status"+(err?" error":"")}
+let elevenVoices=[];
+$("loadElevenVoices").addEventListener("click",async()=>{
+ const key=$("elevenKey").value.trim();if(!key){setElevenStatus("Сначала введи API-ключ ElevenLabs.",true);return;}
+ const b=$("loadElevenVoices");b.disabled=true;setElevenStatus("Загружаю список голосов из твоего аккаунта…");
+ try{const res=await fetch("https://api.elevenlabs.io/v2/voices?page_size=100",{headers:{"xi-api-key":key,"Accept":"application/json"}});
+ if(!res.ok){let m="Ошибка загрузки голосов: "+res.status;try{const d=await res.json();m=d.detail?.message||d.detail||d.message||m}catch(_){}throw new Error(typeof m==="string"?m:JSON.stringify(m));}
+ const data=await res.json();elevenVoices=data.voices||[];
+ if(!elevenVoices.length)throw new Error("В аккаунте пока не найдено доступных голосов.");
+ for(const id of ["elevenProfId","elevenRepId"]){const sel=$(id),previous=sel.value;sel.innerHTML='<option value="">Выбери голос…</option>';elevenVoices.forEach(v=>{const o=document.createElement("option");o.value=v.voice_id;o.textContent=v.name+(v.labels?.language?" · "+v.labels.language:"")+(v.labels?.accent?" · "+v.labels.accent:"");sel.appendChild(o);});if(previous)sel.value=previous;}
+ setElevenStatus("Загружено голосов: "+elevenVoices.length+". Выбери два разных голоса и сначала послушай их образцы.");
+ }catch(e){setElevenStatus("Не удалось загрузить список: "+e.message,true);}finally{b.disabled=false;}
+});
+function previewElevenVoice(selectId,audioId){const v=elevenVoices.find(x=>x.voice_id===$(selectId).value);if(!v?.preview_url){setElevenStatus("У этого голоса нет доступного образца.",true);return;}const a=$(audioId);a.src=v.preview_url;a.style.display="block";a.play().catch(()=>{});}
+$("elevenProfId").addEventListener("change",()=>previewElevenVoice("elevenProfId","elevenProfPreview"));
+$("elevenRepId").addEventListener("change",()=>previewElevenVoice("elevenRepId","elevenRepPreview"));
 function splitDialogue(turns,max=1800){const chunks=[];let part=[],size=0;for(const t of turns){if(t.text.length>max)throw new Error("Одна реплика длиннее 1 800 символов — её нужно разделить.");if(size+t.text.length>max&&part.length){chunks.push(part);part=[];size=0;}part.push(t);size+=t.text.length;}if(part.length)chunks.push(part);return chunks;}
 $("generateEleven").addEventListener("click",async()=>{
  const key=$("elevenKey").value.trim(),prof=$("elevenProfId").value.trim(),rep=$("elevenRepId").value.trim();
