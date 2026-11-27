@@ -103,7 +103,7 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
 ПРЕДСТАВИТЕЛЬ: Думаю, именно этот вопрос и станет предметом ближайших слушаний правительственной комиссии. Профессор, благодарю вас за беседу.</textarea>
     <p class="hint">Это реплики из оригинальной сцены. Ремарки автора и паузы не озвучиваются. Порядок реплик сохранён.</p>
     <div class="field"><label for="screenText">Финальная строка на экране — не озвучивается</label><textarea id="screenText" readonly style="min-height:90px">«Правительственная комиссия рассмотрит законопроект об ограничении разработки и внедрения автономных систем искусственного интеллекта в повседневную жизнь и внедрения в работу промышленного оборудования».</textarea></div>
-    <div class="actions"><button class="primary" id="generate">Сгенерировать диалог</button><button class="secondary" id="download" disabled>Скачать WAV</button></div>
+    <div class="actions"><button class="primary" id="generate">Сгенерировать диалог в Gemini</button><button class="secondary" id="download" disabled>Скачать WAV</button></div>
     <div class="status" id="status" role="status"></div>
     <audio class="player" id="audio" controls></audio>
     <div class="warning">Важно: не публикуй страницу с уже вставленным ключом и не отправляй ключ другим людям. Для этой тестовой версии ключ не записывается в файл.</div>
@@ -112,14 +112,30 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
 </main>
 <script>
 const $=id=>document.getElementById(id);
-// API-ключи остаются в localStorage этого браузера и переживают обновление страницы.
-for(const [id,storageKey] of [["elevenKey","sempiternal_eleven_key"],["apiKey","sempiternal_gemini_key"]]){
-  const field=$(id);
-  try{field.value=localStorage.getItem(storageKey)||"";}catch(_){}
-  field.addEventListener("input",()=>{
-    try{if(field.value) localStorage.setItem(storageKey,field.value);else localStorage.removeItem(storageKey);}catch(_){}
-  });
+// API-ключи сохраняются отдельно для каждого движка в локальном хранилище браузера.
+function restoreAndSaveKey(id,storageKey){
+ const field=$(id);
+ const savedLabel=document.createElement("div");
+ savedLabel.className="hint";
+ savedLabel.id=id+"SaveStatus";
+ savedLabel.textContent="Ключ ещё не сохранён";
+ field.closest(".field").appendChild(savedLabel);
+ try{
+  const saved=localStorage.getItem(storageKey);
+  if(saved){field.value=saved;savedLabel.textContent="Ключ сохранён в этом браузере ✓";}
+ }catch(e){savedLabel.textContent="Браузер запретил локальное сохранение ключа.";}
+ const save=()=>{
+  try{
+   if(field.value){localStorage.setItem(storageKey,field.value);savedLabel.textContent="Ключ сохранён в этом браузере ✓";}
+   else{localStorage.removeItem(storageKey);savedLabel.textContent="Ключ удалён из сохранённых";}
+  }catch(e){savedLabel.textContent="Не удалось сохранить: проверь настройки приватности Safari.";}
+ };
+ field.addEventListener("input",save);
+ field.addEventListener("change",save);
+ field.addEventListener("blur",save);
 }
+restoreAndSaveKey("elevenKey","sempiternal_eleven_key");
+restoreAndSaveKey("apiKey","sempiternal_gemini_key");
 function switchEngine(engine){
  const eleven=engine==="eleven";
  $("elevenPanel").classList.toggle("hidden",!eleven);
@@ -251,6 +267,10 @@ document.querySelectorAll(".preview-btn").forEach(btn=>btn.addEventListener("cli
   finally{btn.disabled=false;btn.textContent="▶ Прослушать голос";}
 }));
 $("generate").addEventListener("click",async()=>{
+  if(!$("elevenPanel").classList.contains("hidden")){
+    if(confirm("Запустить весь диалог через ElevenLabs? Это несколько платных запросов."))runElevenGeneration(true,$("generate"));
+    return;
+  }
   const key=$("apiKey").value.trim();if(!key){setStatus("Сначала вставь API-ключ Google.",true);return;}
   let turns;try{turns=parseTurns($("dialogue").value)}catch(e){setStatus(e.message,true);return;}
   const contents=turns.map(t=>({type:"text",text:t.text,annotations:[{type:"speech_metadata",speaker:t.speaker,style:t.speaker==="Professor"?$("profStyle").value:$("repStyle").value}]}));
