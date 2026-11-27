@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0d12">
+<title>SEMPITERNAL AUDIO LAB</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d12;--panel:#141821;--panel2:#1a202b;--line:#2a3341;--muted:#929cac;--text:#f1f4f8;--accent:#b6f36b;--red:#ff6c62}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#263044 0,transparent 55%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+main{width:min(920px,100%);margin:auto;padding:28px 18px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:26px}.brand{font-size:12px;letter-spacing:.22em;color:var(--accent);font-weight:800}.beta{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:4px 9px}
+h1{font-size:clamp(28px,6vw,44px);line-height:1.05;letter-spacing:-.04em;margin:0 0 10px}h1 span{color:var(--accent)}.intro{color:var(--muted);max-width:620px;margin:0 0 26px}
+.panel{background:linear-gradient(145deg,#171d27,#11151d);border:1px solid var(--line);border-radius:18px;padding:20px;margin:16px 0;box-shadow:0 12px 35px #0003}
+h2{font-size:16px;margin:0 0 15px;letter-spacing:.01em}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:flex;flex-direction:column;gap:7px;margin:10px 0}.field label{font-size:12px;color:#b8c1ce;font-weight:650}.field input,.field select,textarea{width:100%;background:#0d1118;color:var(--text);border:1px solid #303a49;border-radius:10px;padding:12px;font:inherit;outline:none}.field input:focus,.field select:focus,textarea:focus{border-color:var(--accent)}
+.keyrow{display:flex;gap:8px}.keyrow input{flex:1;min-width:0}.smallbtn{background:#252d3a;color:#dce3ec;border:1px solid #3a4657;border-radius:9px;padding:0 13px;cursor:pointer}
+.voice{background:#10151d;border:1px solid #2c3543;border-radius:13px;padding:14px}.voicehead{display:flex;align-items:center;gap:9px;margin-bottom:8px}.dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px #b6f36b66}.voice.rep .dot{background:#ff9b75;box-shadow:0 0 12px #ff9b7566}.voicehead strong{font-size:14px}.voicehead small{margin-left:auto;color:var(--muted);font-size:11px}
+textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:15px}.primary{background:var(--accent);color:#12170d;border:0;border-radius:11px;padding:13px 19px;font-weight:850;font-size:14px;cursor:pointer}.primary:disabled{opacity:.5;cursor:wait}.secondary{background:#252d3a;color:#e7edf5;border:1px solid #3a4657;border-radius:11px;padding:12px 16px;font-weight:650;cursor:pointer}.status{color:var(--muted);font-size:13px;min-height:22px}.status.error{color:#ff8c82}.player{width:100%;margin-top:16px;display:none}.foot{color:#687384;font-size:11px;text-align:center;margin-top:25px}.warning{font-size:12px;color:#c0c8d4;background:#10151d;border-left:3px solid #d9b76a;padding:10px 12px;border-radius:5px;margin-top:12px}
+@media(max-width:650px){main{padding:22px 14px 45px}.row{grid-template-columns:1fr}.panel{padding:16px}.top{margin-bottom:22px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><div class="brand">SEMPITERNAL / AUDIO LAB</div><div class="beta">BETA 0.1</div></div>
+  <h1>Дадим истории <span>голос.</span></h1>
+  <p class="intro">Первая тестовая студия озвучки сцены из «СЕМПИТЕРНАЛ». Два голоса, один диалог. Пока наша задача простая — услышать, как это работает.</p>
+
+  <section class="panel">
+    <h2>01 / Подключение</h2>
+    <div class="field">
+      <label for="apiKey">Твой Google Gemini API key</label>
+      <div class="keyrow"><input id="apiKey" type="password" autocomplete="off" placeholder="Вставь API-ключ сюда"><button class="smallbtn" id="toggleKey" type="button">Показать</button></div>
+      <div class="hint">Ключ используется только в этом браузере для запроса к Google. Студия его не сохраняет и не отправляет нам.</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>02 / Голоса персонажей</h2>
+    <div class="row">
+      <div class="voice">
+        <div class="voicehead"><span class="dot"></span><strong>Профессор</strong><small>60–65 лет</small></div>
+        <div class="field"><label for="profVoice">Голос</label><select id="profVoice"><option value="Charon" selected>Charon — глубокий, спокойный</option><option value="Orus">Orus — уверенный, зрелый</option><option value="Fenrir">Fenrir — низкий, выразительный</option><option value="Kore">Kore — мягкий, ясный</option><option value="Puck">Puck — энергичный</option></select></div>
+        <div class="field"><label for="profStyle">Манера речи</label><input id="profStyle" value="Мужчина 60–65 лет. Низкий бархатный баритон, спокойная интеллектуальная подача, лёгкая хрипотца. Убедительный, вдумчивый. Эмоции нарастают постепенно, без театрального переигрывания."></div>
+      </div>
+      <div class="voice rep">
+        <div class="voicehead"><span class="dot"></span><strong>Представитель комиссии</strong><small>45–50 лет</small></div>
+        <div class="field"><label for="repVoice">Голос</label><select id="repVoice"><option value="Puck" selected>Puck — чёткий, уверенный</option><option value="Orus">Orus — сдержанный, зрелый</option><option value="Charon">Charon — глубокий</option><option value="Kore">Kore — мягкий, ясный</option><option value="Fenrir">Fenrir — низкий, выразительный</option></select></div>
+        <div class="field"><label for="repStyle">Манера речи</label><input id="repStyle" value="Мужчина 45–50 лет. Чистый уверенный баритон, профессиональная телевизионная подача. Контролируемый, слегка скептичный, иногда сдержанно раздражённый."></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>03 / Текст диалога</h2>
+    <textarea id="dialogue" spellcheck="false">ПРЕДСТАВИТЕЛЬ: Профессор, вы действительно считаете, что искусственный интеллект может представлять угрозу для общества?
+ПРОФЕССОР: Я считаю, что угроза заключается не в самом искусственном интеллекте. Она заключается в том, как человек распоряжается тем, что создаёт.
+ПРЕДСТАВИТЕЛЬ: Но разве не разумно ограничить развитие технологии, если мы не можем предсказать её последствия?
+ПРОФЕССОР: Представьте реку. Вы можете направить её в бетонное русло, поставить дамбы, рассчитать каждый поворот. Но вода всё равно будет искать путь. И вопрос не в том, остановите ли вы реку. Вопрос в том, что произойдёт, когда она найдёт выход.
+ПРОФЕССОР: Одни видят страх. Другие — власть.</textarea>
+    <p class="hint">Каждая реплика с новой строки. Начинай строку с «ПРОФЕССОР:» или «ПРЕДСТАВИТЕЛЬ:». Ремарки и описания действий пока не добавляй — озвучиваем только произносимые слова.</p>
+    <div class="actions"><button class="primary" id="generate">Сгенерировать диалог</button><button class="secondary" id="download" disabled>Скачать WAV</button></div>
+    <div class="status" id="status" role="status"></div>
+    <audio class="player" id="audio" controls></audio>
+    <div class="warning">Важно: не публикуй страницу с уже вставленным ключом и не отправляй ключ другим людям. Для этой тестовой версии ключ не записывается в файл.</div>
+  </section>
+  <div class="foot">SEMPITERNAL AUDIO LAB · PRIVATE TEST BUILD</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let audioBlob=null;
+$("toggleKey").addEventListener("click",()=>{const k=$("apiKey");k.type=k.type==="password"?"text":"password";$("toggleKey").textContent=k.type==="password"?"Показать":"Скрыть"});
+function setStatus(s,err=false){$("status").textContent=s;$("status").className="status"+(err?" error":"")}
+function parseTurns(raw){
+  const lines=raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean), turns=[];
+  for(const line of lines){
+    const m=line.match(/^(ПРОФЕССОР|ПРЕДСТАВИТЕЛЬ)\s*:\s*(.+)$/i);
+    if(!m) throw new Error("Не понял строку: "+line.slice(0,70)+". Начни её с ПРОФЕССОР: или ПРЕДСТАВИТЕЛЬ:");
+    const speaker=m[1].toUpperCase()==="ПРОФЕССОР"?"Professor":"Representative";
+    turns.push({speaker,text:m[2]});
+  }
+  if(!turns.length) throw new Error("Добавь хотя бы одну реплику.");
+  return turns;
+}
+function findAudio(obj){
+  if(!obj||typeof obj!=="object")return null;
+  if(typeof obj.data==="string" && (obj.mime_type||obj.mimeType||obj.type==="audio"))return obj.data;
+  if(Array.isArray(obj)){for(const x of obj){const v=findAudio(x);if(v)return v;}}
+  else {for(const [k,v] of Object.entries(obj)){if(k.toLowerCase().includes("audio")){const a=findAudio(v);if(a)return a;}const a=findAudio(v);if(a)return a;}}
+  return null;
+}
+function base64ToBlob(b64,mime="audio/wav"){const bin=atob(b64);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return new Blob([bytes],{type:mime});}
+$("generate").addEventListener("click",async()=>{
+  const key=$("apiKey").value.trim();if(!key){setStatus("Сначала вставь API-ключ Google.",true);return;}
+  let turns;try{turns=parseTurns($("dialogue").value)}catch(e){setStatus(e.message,true);return;}
+  const contents=turns.map(t=>({type:"text",text:t.text,annotations:[{type:"speech_metadata",speaker:t.speaker,style:t.speaker==="Professor"?$("profStyle").value:$("repStyle").value}]}));
+  const payload={model:"gemini-3.8-flash-tts",input:[{type:"user_input",content:contents}],response_format:{type:"audio"},generation_config:{speech_config:{speakers:[{speaker:"Professor",voice:$("profVoice").value},{speaker:"Representative",voice:$("repVoice").value}]}}};
+  $("generate").disabled=true;$("download").disabled=true;$("audio").style.display="none";setStatus("Генерирую голоса… это может занять немного времени.");
+  try{
+    const res=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data?.error?.message||"Google вернул ошибку "+res.status);
+    const b64=findAudio(data);
+    if(!b64)throw new Error("Ответ получен, но аудиоданные не найдены. Проверь модель и доступ к Gemini TTS.");
+    audioBlob=base64ToBlob(b64);const url=URL.createObjectURL(audioBlob);$("audio").src=url;$("audio").style.display="block";$("download").disabled=false;setStatus("Готово! Жми Play и слушай. 🎧");
+  }catch(e){setStatus("Не получилось: "+e.message,true);}
+  finally{$("generate").disabled=false;}
+});
+$("download").addEventListener("click",()=>{if(!audioBlob)return;const url=URL.createObjectURL(audioBlob);const a=document.createElement("a");a.href=url;a.download="sempiternal-dialogue.wav";a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);});
+</script>
+</body>
+</html>
