@@ -15,7 +15,8 @@ h2{font-size:16px;margin:0 0 15px;letter-spacing:.01em}.row{display:grid;grid-te
 .keyrow{display:flex;gap:8px}.keyrow input{flex:1;min-width:0}.smallbtn{background:#252d3a;color:#dce3ec;border:1px solid #3a4657;border-radius:9px;padding:0 13px;cursor:pointer}
 .voice{background:#10151d;border:1px solid #2c3543;border-radius:13px;padding:14px}.voicehead{display:flex;align-items:center;gap:9px;margin-bottom:8px}.dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px #b6f36b66}.voice.rep .dot{background:#ff9b75;box-shadow:0 0 12px #ff9b7566}.voicehead strong{font-size:14px}.voicehead small{margin-left:auto;color:var(--muted);font-size:11px}
 textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
-.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:15px}.primary{background:var(--accent);color:#12170d;border:0;border-radius:11px;padding:13px 19px;font-weight:850;font-size:14px;cursor:pointer}.primary:disabled{opacity:.5;cursor:wait}.secondary{background:#252d3a;color:#e7edf5;border:1px solid #3a4657;border-radius:11px;padding:12px 16px;font-weight:650;cursor:pointer}.status{color:var(--muted);font-size:13px;min-height:22px}.status.error{color:#ff8c82}.player{width:100%;margin-top:16px;display:none}.foot{color:#687384;font-size:11px;text-align:center;margin-top:25px}.warning{font-size:12px;color:#c0c8d4;background:#10151d;border-left:3px solid #d9b76a;padding:10px 12px;border-radius:5px;margin-top:12px}\n.tabs{display:flex;gap:8px;margin:0 0 18px;padding:5px;background:#10151d;border:1px solid var(--line);border-radius:13px}.tab{flex:1;background:transparent;color:var(--muted);border:0;border-radius:9px;padding:11px 12px;font:inherit;font-weight:750;cursor:pointer}.tab.active{background:var(--accent);color:#12170d}.engine-pane.hidden{display:none}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:15px}.primary{background:var(--accent);color:#12170d;border:0;border-radius:11px;padding:13px 19px;font-weight:850;font-size:14px;cursor:pointer}.primary:disabled{opacity:.5;cursor:wait}.secondary{background:#252d3a;color:#e7edf5;border:1px solid #3a4657;border-radius:11px;padding:12px 16px;font-weight:650;cursor:pointer}.status{color:var(--muted);font-size:13px;min-height:22px}.status.error{color:#ff8c82}.player{width:100%;margin-top:16px;display:none}.foot{color:#687384;font-size:11px;text-align:center;margin-top:25px}.warning{font-size:12px;color:#c0c8d4;background:#10151d;border-left:3px solid #d9b76a;padding:10px 12px;border-radius:5px;margin-top:12px}
+.tabs{display:flex;gap:8px;margin:0 0 18px;padding:5px;background:#10151d;border:1px solid var(--line);border-radius:13px}.tab{flex:1;background:transparent;color:var(--muted);border:0;border-radius:9px;padding:11px 12px;font:inherit;font-weight:750;cursor:pointer}.tab.active{background:var(--accent);color:#12170d}.engine-pane.hidden{display:none}\n.tabs{display:flex;gap:8px;margin:0 0 18px;padding:5px;background:#10151d;border:1px solid var(--line);border-radius:13px}.tab{flex:1;background:transparent;color:var(--muted);border:0;border-radius:9px;padding:11px 12px;font:inherit;font-weight:750;cursor:pointer}.tab.active{background:var(--accent);color:#12170d}.engine-pane.hidden{display:none}
 @media(max-width:650px){main{padding:22px 14px 45px}.row{grid-template-columns:1fr}.panel{padding:16px}.top{margin-bottom:22px}}
 </style>
 </head>
@@ -25,6 +26,9 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
   <h1>Дадим истории <span>голос.</span></h1>
   <p class="intro">Первая тестовая студия озвучки сцены из «СЕМПИТЕРНАЛ». Два голоса, один диалог. Пока наша задача простая — услышать, как это работает.</p>
 
+  <div class="tabs" role="tablist" aria-label="Движок озвучки"><button class="tab active" id="tabEleven" type="button" role="tab" aria-selected="true">ElevenLabs</button><button class="tab" id="tabGemini" type="button" role="tab" aria-selected="false">Gemini · запасной</button></div>
+  <div id="elevenPanel" class="engine-pane">
+  <div id="geminiPanel" class="engine-pane hidden">
   <section class="panel">
     <h2>01 / Подключение</h2>
     <div class="field">
@@ -64,6 +68,7 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
     </div>
   </section>
 
+  </div>
   <section class="panel">
     <h2>03 / Текст диалога</h2>
     <textarea id="dialogue" spellcheck="false">ПРЕДСТАВИТЕЛЬ: Вы постоянно говорите об угрозе, профессор. Но давайте начнём с простого вопроса. Почему мы вообще должны бояться искусственного интеллекта?
