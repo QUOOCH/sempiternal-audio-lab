@@ -46,7 +46,7 @@ textarea{min-height:250px;resize:vertical;line-height:1.6}.hint{font-size:12px;c
     <label class="hint" style="display:flex;gap:9px;align-items:center;margin:12px 0"><input id="elevenAutoTags" type="checkbox" checked style="width:auto;accent-color:var(--accent)"> Автоматически менять эмоции по ходу сцены</label>
     <p class="hint">Манера задаёт общий характер голоса, а эмоциональные теги меняют подачу конкретных реплик. Текст оригинала не меняется.</p>
     <div class="actions"><button class="secondary" id="loadElevenVoices" type="button">Загрузить мои голоса</button></div><div class="field"><label for="elevenModel">Модель</label><select id="elevenModel"><option value="eleven_v4" selected>Eleven v4 — выразительный диалог (рекомендуется)</option><option value="eleven_v3">Eleven v3 — выразительный диалог</option></select></div>
-    <div class="actions"><button class="primary" id="generateEleven">Сгенерировать в ElevenLabs</button><button class="secondary" id="downloadEleven" disabled>Скачать MP3</button></div>
+    <div class="actions"><button class="primary" id="generateElevenTest">Тест: первые 2 реплики</button><button class="secondary" id="generateElevenFull">Весь диалог</button><button class="secondary" id="downloadEleven" disabled>Скачать MP3</button></div>
     <div class="status" id="elevenStatus" role="status"></div><audio class="player" id="elevenAudio" controls></audio>
     <div class="warning">В каждый запрос добавляются настройки манеры и эмоциональные теги. Диалог делится на фрагменты до лимита API; каждый фрагмент — отдельный запрос и расход кредитов. Сначала проверь короткий отрывок.</div>
   </section>
@@ -190,11 +190,11 @@ function splitElevenInputs(inputs,max=1900){
  }
  if(part.length)chunks.push(part);return chunks;
 }
-$("generateEleven").addEventListener("click",async()=>{
+async function runElevenGeneration(full,btn){
  const key=$("elevenKey").value.trim(),prof=$("elevenProfId").value.trim(),rep=$("elevenRepId").value.trim();
  if(!key||!prof||!rep){setElevenStatus("Нужны API-ключ и два Voice ID. Пока ничего не отправлено и кредиты не потрачены.",true);return;}
- let chunks;try{chunks=splitElevenInputs(buildElevenInputs(parseTurns($("dialogue").value),prof,rep));}catch(e){setElevenStatus(e.message,true);return;}
- const btn=$("generateEleven"),parts=[];btn.disabled=true;$("downloadEleven").disabled=true;$("elevenAudio").style.display="none";
+ let chunks;try{let turns=parseTurns($("dialogue").value);if(!full)turns=turns.slice(0,2);chunks=splitElevenInputs(buildElevenInputs(turns,prof,rep));}catch(e){setElevenStatus(e.message,true);return;}
+ const parts=[];btn.disabled=true;$("downloadEleven").disabled=true;$("elevenAudio").style.display="none";
  try{for(let i=0;i<chunks.length;i++){
   setElevenStatus("Генерирую фрагмент "+(i+1)+" из "+chunks.length+"…");
   const res=await fetch("https://api.elevenlabs.io/v1/text-to-dialogue?output_format=mp3_44100_128",{method:"POST",headers:{"xi-api-key":key,"Content-Type":"application/json","Accept":"audio/mpeg"},body:JSON.stringify({model_id:$("elevenModel").value,language_code:"ru",inputs:chunks[i]})});
@@ -203,7 +203,9 @@ $("generateEleven").addEventListener("click",async()=>{
  }
  elevenBlob=new Blob(parts,{type:"audio/mpeg"});const url=URL.createObjectURL(elevenBlob);$("elevenAudio").src=url;$("elevenAudio").style.display="block";$("downloadEleven").disabled=false;setElevenStatus("Готово! 🎧");
  }catch(e){setElevenStatus("Не получилось: "+e.message+(e.message==="Failed to fetch"?" Возможно, браузер блокирует прямой запрос (CORS). Тогда сделаем серверный посредник.":""),true);}finally{btn.disabled=false;}
-});
+}
+$("generateElevenTest").addEventListener("click",()=>runElevenGeneration(false,$("generateElevenTest")));
+$("generateElevenFull").addEventListener("click",()=>{if(confirm("Полный диалог будет разбит на несколько платных запросов. Сначала лучше проверить короткий тест. Всё равно генерировать весь диалог?"))runElevenGeneration(true,$("generateElevenFull"));});
 $("downloadEleven").addEventListener("click",()=>{if(!elevenBlob)return;const u=URL.createObjectURL(elevenBlob),a=document.createElement("a");a.href=u;a.download="sempiternal-elevenlabs-dialogue.mp3";a.click();setTimeout(()=>URL.revokeObjectURL(u),1500);});
 let audioBlob=null;
 $("toggleKey").addEventListener("click",()=>{const k=$("apiKey");k.type=k.type==="password"?"text":"password";$("toggleKey").textContent=k.type==="password"?"Показать":"Скрыть"});
