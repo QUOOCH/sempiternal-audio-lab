@@ -112,8 +112,10 @@ document.querySelectorAll(".preview-btn").forEach(btn=>btn.addEventListener("cli
   const sample=isProf
     ?"Представьте реку. Вы можете направить её в бетонное русло, поставить дамбы, рассчитать каждый поворот. Но вода всё равно будет искать путь."
     :"Профессор, вы действительно считаете, что искусственный интеллект может представлять угрозу для общества?";
-  const speaker="Preview";
-  const payload={model:"gemini-3.8-flash-tts",input:[{type:"user_input",content:[{type:"text",text:sample,annotations:[{type:"speech_metadata",speaker,style:style.value}]}]}],response_format:{type:"audio"},generation_config:{speech_config:{speakers:[{speaker,voice:select.value}]}}};
+  const speaker=isProf?"Professor":"Representative";
+  const otherSpeaker=isProf?"Representative":"Professor";
+  const otherVoice=$(isProf?"repVoice":"profVoice").value;
+  const payload={model:"gemini-3.8-flash-tts",input:[{type:"user_input",content:[{type:"text",text:sample,annotations:[{type:"speech_metadata",speaker,style:style.value}]}]}],response_format:{type:"audio"},generation_config:{speech_config:{speakers:[{speaker,voice:select.value},{speaker:otherSpeaker,voice:otherVoice}]}}};
   btn.disabled=true;btn.textContent="Готовлю образец…";setStatus("Генерирую короткий образец голоса…");
   try{
     const res=await fetch("https://generativelanguage.googleapis.com/v1beta/interactions",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:JSON.stringify(payload)});
