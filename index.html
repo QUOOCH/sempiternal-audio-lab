@@ -144,9 +144,11 @@ function switchEngine(engine){
  $("tabGemini").classList.toggle("active",!eleven);
  $("tabEleven").setAttribute("aria-selected",String(eleven));
  $("tabGemini").setAttribute("aria-selected",String(!eleven));
+ $("generate").textContent=eleven?"Сгенерировать весь диалог в ElevenLabs":"Сгенерировать диалог в Gemini";
 }
 $("tabEleven").addEventListener("click",()=>switchEngine("eleven"));
 $("tabGemini").addEventListener("click",()=>switchEngine("gemini"));
+switchEngine("eleven");
 
 let elevenBlob=null;
 $("toggleElevenKey").addEventListener("click",()=>{const k=$("elevenKey");k.type=k.type==="password"?"text":"password";$("toggleElevenKey").textContent=k.type==="password"?"Показать":"Скрыть"});
